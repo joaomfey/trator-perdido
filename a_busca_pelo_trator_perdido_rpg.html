@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Busca pelo Trator Perdido - Fazenda Esperança</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: MedievalSharp / Press Start 2P / Changa -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Fredoka', cursive, sans-serif;
+            background-color: #1a120b;
+            color: #f3eae1;
+            user-select: none;
+        }
+
+        .pixel-font {
+            font-family: 'VT323', monospace;
+        }
+
+        /* Rustic Wood Pattern / Card styles */
+        .wood-panel {
+            background: #2c1d11;
+            border: 4px solid #5c3d2e;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8), 0 8px 20px rgba(0,0,0,0.6);
+            border-radius: 12px;
+        }
+
+        .wood-card {
+            background: #3a2617;
+            border: 2px solid #6d4c3d;
+            border-radius: 8px;
+        }
+
+        .btn-retro {
+            background: linear-gradient(180deg, #d97706 0%, #b45309 100%);
+            border: 2px solid #fef3c7;
+            box-shadow: 0 4px 0 #78350f;
+            transition: all 0.1s ease;
+        }
+
+        .btn-retro:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #78350f;
+            filter: brightness(1.1);
+        }
+
+        .btn-retro:active:not(:disabled) {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #78350f;
+        }
+
+        .btn-retro:disabled {
+            background: #4b5563;
+            border-color: #9ca3af;
+            box-shadow: none;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a120b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #5c3d2e;
+            border-radius: 4px;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { filter: drop-shadow(0 0 5px rgba(234, 179, 8, 0.4)); }
+            50% { filter: drop-shadow(0 0 15px rgba(234, 179, 8, 0.8)); }
+        }
+
+        .glow-effect {
+            animation: pulse-glow 2s infinite;
+        }
+
+        /* Shake animation for challenges */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+        .shake {
+            animation: shake 0.4s ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-2 md:p-6 bg-stone-950">
+
+    <!-- Header Navigation Bar -->
+    <header class="max-w-5xl mx-auto w-full wood-panel p-4 mb-4 flex flex-wrap justify-between items-center gap-4 border-amber-800">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-green-800 border-2 border-amber-300 rounded-full flex items-center justify-center text-amber-200 text-2xl shadow-inner">
+                <i class="fa-solid fa-tractor"></i>
+            </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-bold text-amber-200 tracking-wide">FAZENDA ESPERANÇA</h1>
+                <p class="text-xs text-amber-400 pixel-font text-lg leading-none">Em busca do Massey-Valente</p>
+            </div>
+        </div>
+
+        <!-- Mute Audio Toggle & Restart -->
+        <div class="flex items-center gap-3">
+            <button id="sound-btn" onclick="toggleSound()" class="px-3 py-2 bg-amber-900 border border-amber-600 rounded text-amber-200 text-xs hover:bg-amber-800 flex items-center gap-2">
+                <i id="sound-icon" class="fa-solid fa-volume-high"></i>
+                <span id="sound-text">Som: ON</span>
+            </button>
+            <button onclick="confirmRestart()" class="px-3 py-2 bg-red-900 border border-red-600 rounded text-red-200 text-xs hover:bg-red-800 flex items-center gap-2">
+                <i class="fa-solid fa-rotate-left"></i> Reiniciar
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Game Container -->
+    <main class="max-w-5xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-4 flex-grow">
+
+        <!-- Left / Top Column: Visual Scene & Game Controls (8 Cols) -->
+        <section class="lg:col-span-8 flex flex-col gap-4">
+
+            <!-- HUD / Status Bar -->
+            <div class="wood-panel p-3 grid grid-cols-3 gap-2 text-center text-sm md:text-base">
+                <div class="bg-stone-900/80 p-2 rounded border border-amber-900/50 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-bolt text-yellow-400 text-lg"></i>
+                    <span class="text-xs md:text-sm text-stone-300">Energia:</span>
+                    <span id="stat-energy" class="font-bold text-yellow-400 text-lg">100</span>
+                </div>
+                <div class="bg-stone-900/80 p-2 rounded border border-amber-900/50 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-coins text-amber-400 text-lg"></i>
+                    <span class="text-xs md:text-sm text-stone-300">Moedas:</span>
+                    <span id="stat-coins" class="font-bold text-amber-300 text-lg">15</span>
+                </div>
+                <div class="bg-stone-900/80 p-2 rounded border border-amber-900/50 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-magnifying-glass text-emerald-400 text-lg"></i>
+                    <span class="text-xs md:text-sm text-stone-300">Pistas:</span>
+                    <span id="stat-clues" class="font-bold text-emerald-400 text-lg">0/4</span>
+                </div>
+            </div>
+
+            <!-- Dynamic SVG Scene Display -->
+            <div id="scene-canvas-container" class="wood-panel relative h-64 md:h-80 overflow-hidden flex items-center justify-center bg-stone-900">
+                <!-- SVG Content injected via JS -->
+                <div id="scene-svg" class="w-full h-full"></div>
+                
+                <!-- Scene Title Overlay -->
+                <div class="absolute top-3 left-3 bg-stone-950/80 border border-amber-700/60 px-3 py-1 rounded-md text-amber-300 text-sm font-semibold backdrop-blur-sm flex items-center gap-2">
+                    <i id="scene-icon" class="fa-solid fa-location-dot"></i>
+                    <span id="scene-title">Carregando...</span>
+                </div>
+            </div>
+
+            <!-- Story Narrative Text Box -->
+            <div class="wood-panel p-4 md:p-5 flex-grow flex flex-col justify-between">
+                <div>
+                    <h2 class="text-lg font-bold text-amber-300 mb-2 border-b border-amber-900/60 pb-1 flex items-center justify-between">
+                        <span><i class="fa-solid fa-scroll mr-2 text-amber-500"></i>Acontecimentos</span>
+                        <span id="location-badge" class="text-xs bg-amber-950 text-amber-400 border border-amber-800 px-2 py-0.5 rounded">Fazenda Esperança</span>
+                    </h2>
+                    <p id="story-text" class="text-stone-200 text-sm md:text-base leading-relaxed my-3 min-h-[80px]">
+                        O dia mal clareou e a Fazenda Esperança está em polvorosa...
+                    </p>
+                </div>
+
+                <!-- Action Choice Buttons -->
+                <div id="choices-container" class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-4">
+                    <!-- Dynamic choice buttons inserted here -->
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Right / Bottom Column: Map & Inventory (4 Cols) -->
+        <section class="lg:col-span-4 flex flex-col gap-4">
+
+            <!-- Interactive Mini Map / Location Selector -->
+            <div class="wood-panel p-4">
+                <h3 class="text-amber-200 font-bold mb-3 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-map-location-dot text-amber-500"></i> Mapa da Fazenda
+                </h3>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <button onclick="travelTo('fazenda')" id="map-fazenda" class="p-2 wood-card hover:bg-amber-900/50 text-left transition flex items-center gap-2 border-amber-700">
+                        <i class="fa-solid fa-house text-amber-400"></i> Casa Sede
+                    </button>
+                    <button onclick="travelTo('celeiro')" id="map-celeiro" class="p-2 wood-card hover:bg-amber-900/50 text-left transition flex items-center gap-2 border-amber-700">
+                        <i class="fa-solid fa-warehouse text-amber-600"></i> Celeiro
+                    </button>
+                    <button onclick="travelTo('milharal')" id="map-milharal" class="p-2 wood-card hover:bg-amber-900/50 text-left transition flex items-center gap-2 border-amber-700">
+                        <i class="fa-solid fa-wheat-awn text-yellow-500"></i> Milharal
+                    </button>
+                    <button onclick="travelTo('oficina')" id="map-oficina" class="p-2 wood-card hover:bg-amber-900/50 text-left transition flex items-center gap-2 border-amber-700">
+                        <i class="fa-solid fa-wrench text-slate-400"></i> Oficina
+                    </button>
+                    <button onclick="travelTo('rio')" id="map-rio" class="p-2 wood-card hover:bg-amber-900/50 text-left transition flex items-center gap-2 border-amber-700">
+                        <i class="fa-solid fa-water text-blue-400"></i> Rio do Sapo
+                    </button>
+                    <button onclick="travelTo('floresta')" id="map-floresta" class="p-2 wood-card hover:bg-amber-900/50 text-left transition flex items-center gap-2 border-amber-700">
+                        <i class="fa-solid fa-tree text-emerald-600"></i> Caverna Velha
+                    </button>
+                </div>
+            </div>
+
+            <!-- Inventory Box -->
+            <div class="wood-panel p-4 flex-grow flex flex-col">
+                <h3 class="text-amber-200 font-bold mb-3 text-sm flex items-center justify-between">
+                    <span class="flex items-center gap-2">
+                        <i class="fa-solid fa-bag-shopping text-amber-500"></i> Mochila / Inventário
+                    </span>
+                    <span id="inventory-count" class="text-xs text-amber-400 font-normal">0/6 itens</span>
+                </h3>
+
+                <!-- Inventory Slots Grid -->
+                <div id="inventory-grid" class="grid grid-cols-3 gap-2 flex-grow min-h-[160px]">
+                    <!-- 6 Slots dynamically populated -->
+                </div>
+
+                <!-- Item Description Panel -->
+                <div id="item-detail" class="mt-3 p-2 bg-stone-950/80 border border-amber-900/50 rounded text-xs text-stone-300 h-16 flex items-center justify-center text-center italic">
+                    Clique em um item do inventário para ver seus detalhes.
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="max-w-5xl mx-auto w-full text-center text-stone-500 text-xs py-4">
+        RPG Caça ao Trator Perdido &copy; 2026 - Desenvolvido para navegadores moderninhos.
+    </footer>
+
+    <!-- Custom Modal for Dialogs & Minigames -->
+    <div id="game-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="wood-panel p-6 max-w-md w-full relative border-2 border-amber-500 shadow-2xl">
+            <h3 id="modal-title" class="text-xl font-bold text-amber-300 mb-3 border-b border-amber-800 pb-2">Título</h3>
+            <div id="modal-body" class="text-stone-200 text-sm mb-6">
+                Conteúdo do Modal...
+            </div>
+            <div id="modal-actions" class="flex justify-end gap-2">
+                <button onclick="closeModal()" class="px-4 py-2 btn-retro text-amber-950 font-bold rounded">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Game Logic -->
+    <script>
+        /* ==========================================================================
+           AUDIO SYNTHESIZER (Web Audio API)
+           ========================================================================== */
+        let audioCtx = null;
+        let soundEnabled = true;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            initAudio();
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.05);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } else if (type === 'item') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.setValueAtTime(450, now + 0.08);
+                osc.frequency.setValueAtTime(600, now + 0.16);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (type === 'clue') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'win') {
+                const notes = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5
+                notes.forEach((freq, idx) => {
+                    const noteOsc = audioCtx.createOscillator();
+                    const noteGain = audioCtx.createGain();
+                    noteOsc.connect(noteGain);
+                    noteGain.connect(audioCtx.destination);
+
+                    noteOsc.frequency.setValueAtTime(freq, now + idx * 0.12);
+                    noteGain.gain.setValueAtTime(0.2, now + idx * 0.12);
+                    noteGain.gain.linearRampToValueAtTime(0.01, now + idx * 0.12 + 0.2);
+
+                    noteOsc.start(now + idx * 0.12);
+                    noteOsc.stop(now + idx * 0.12 + 0.25);
+                });
+            } else if (type === 'engine') {
+                // Tractor engine roar synthesis
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(60, now);
+                osc.frequency.linearRampToValueAtTime(140, now + 1.2);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 1.5);
+                osc.start(now);
+                osc.stop(now + 1.5);
+            } else if (type === 'error') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.setValueAtTime(120, now + 0.1);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btnText = document.getElementById('sound-text');
+            const btnIcon = document.getElementById('sound-icon');
+            if (soundEnabled) {
+                btnText.innerText = "Som: ON";
+                btnIcon.className = "fa-solid fa-volume-high";
+                playSound('click');
+            } else {
+                btnText.innerText = "Som: OFF";
+                btnIcon.className = "fa-solid fa-volume-xmark";
+            }
+        }
+
+        /* ==========================================================================
+           GAME STATE & DATA
+           ========================================================================== */
+        const gameState = {
+            energy: 100,
+            coins: 15,
+            clues: 0,
+            currentLocation: 'fazenda',
+            currentSceneId: 'start',
+            inventory: [], // [{ id, name, icon, desc }]
+            flags: {
+                talkedToAntonio: false,
+                foundTracksCeleiro: false,
+                fedBarao: false,
+                scaredCrows: false,
+                hasFishHook: false,
+                helpedFisherman: false,
+                gotDiesel: false,
+                gotWrench: false,
+                gotSparkPlug: false,
+                raccoonsDealtWith: false,
+                tractorFixed: false
+            }
+        };
+
+        // ITEMS DATA
+        const ITEMS = {
+            petisco: { id: 'petisco', name: 'Petisco Crocante', icon: '🦴', desc: 'Um biscoito para cães bem cheiroso. O Cão Barão ama!' },
+            pao_queijo: { id: 'pao_queijo', name: 'Pão de Queijo', icon: '🧀', desc: 'Quentinho e delicioso. Recupera 25 de Energia.' },
+            anzol: { id: 'anzol', name: 'Anzol Dourado', icon: '🪝', desc: 'Encontrado no milharal. Pertence ao Pescador Zico.' },
+            galao_diesel: { id: 'galao_diesel', name: 'Galão de Diesel', icon: '⛽', desc: 'Combustível de alta qualidade para o Massey-Valente.' },
+            chave_inglesa: { id: 'chave_inglesa', name: 'Chave Inglesa', icon: '🔧', desc: 'Ferramenta robusta da Oficina do Seu Bento.' },
+            vela_ignicao: { id: 'vela_ignicao', name: 'Vela de Ignição', icon: '🔌', desc: 'Peça essencial para fazer o motor do trator pegar.' },
+            milho_ouro: { id: 'milho_ouro', name: 'Espiga de Milho', icon: '🌽', desc: 'Milho doce e suculento. Excelente para distrair animais.' },
+            lanterna: { id: 'lanterna', name: 'Lanterna Velha', icon: '🔦', desc: 'Ilumina locais muito escuros como a Caverna Velha.' }
+        };
+
+        /* ==========================================================================
+           SVG SCENE GENERATOR
+           ========================================================================== */
+        function getSceneSVG(location) {
+            switch(location) {
+                case 'fazenda':
+                    return `
+                    <svg viewBox="0 0 400 200" class="w-full h-full object-cover">
+                        <rect width="400" height="200" fill="#2d1f10"/>
+                        <path d="M0,120 Q200,90 400,120 L400,200 L0,200 Z" fill="#3a5a20"/>
+                        <!-- Farm House -->
+                        <polygon points="80,80 180,80 130,40" fill="#8b0000"/>
+                        <rect x="90" y="80" width="80" height="60" fill="#d2b48c"/>
+                        <rect x="120" y="100" width="20" height="40" fill="#5c3a21"/>
+                        <rect x="100" y="90" width="15" height="15" fill="#f0e68c"/>
+                        <!-- Fence -->
+                        <path d="M 0,140 L 400,140 M 20,130 L 20,150 M 60,130 L 60,150 M 220,130 L 220,150 M 260,130 L 260,150 M 300,130 L 300,150 M 340,130 L 340,150 M 380,130 L 380,150" stroke="#8b5a2b" stroke-width="3"/>
+                        <!-- Sun -->
+                        <circle cx="340" cy="40" r="22" fill="#ffd700" opacity="0.8"/>
+                        <!-- Text/Detail -->
+                        <text x="130" y="30" fill="#fef3c7" font-size="12" font-family="sans-serif" text-anchor="middle">Fazenda Esperança</text>
+                    </svg>`;
+
+                case 'celeiro':
+                    return `
+                    <svg viewBox="0 0 400 200" class="w-full h-full object-cover">
+                        <rect width="400" height="200" fill="#1e1810"/>
+                        <path d="M0,130 L400,130 L400,200 L0,200 Z" fill="#2d2013"/>
+                        <!-- Barn Interior structure -->
+                        <path d="M40,30 L360,30 L380,170 L20,170 Z" fill="#5c1d11" stroke="#3b110a" stroke-width="4"/>
+                        <rect x="150" y="70" width="100" height="100" fill="#1a0d00"/>
+                        <!-- Straw Bales -->
+                        <rect x="60" y="130" width="40" height="25" fill="#eab308" rx="3"/>
+                        <rect x="70" y="110" width="35" height="22" fill="#d97706" rx="3"/>
+                        <rect x="300" y="125" width="50" height="30" fill="#eab308" rx="3"/>
+                        <!-- Dog Silhouete or Bowl -->
+                        <circle cx="200" cy="150" r="12" fill="#a16207"/>
+                        <!-- Tire Tracks -->
+                        <path d="M170,170 C180,150 190,140 200,130" stroke="#110d08" stroke-width="6" stroke-dasharray="4,4"/>
+                        <path d="M230,170 C220,150 210,140 200,130" stroke="#110d08" stroke-width="6" stroke-dasharray="4,4"/>
+                    </svg>`;
+
+                case 'milharal':
+                    return `
+                    <svg viewBox="0 0 400 200" class="w-full h-full object-cover">
+                        <rect width="400" height="200" fill="#1c2514"/>
+                        <!-- Sky -->
+                        <rect width="400" height="80" fill="#312e81" opacity="0.4"/>
+                        <!-- Corn Stalks -->
+                        <g fill="#4d7c0f">
+                            <path d="M 20,200 Q 30,120 10,80 Q 40,110 50,200 Z"/>
+                            <path d="M 60,200 Q 70,110 50,70 Q 80,100 90,200 Z"/>
+                            <path d="M 110,200 Q 120,100 100,60 Q 130,90 140,200 Z"/>
+                            <path d="M 160,200 Q 170,110 150,75 Q 180,100 190,200 Z"/>
+                            <path d="M 210,200 Q 220,100 200,60 Q 230,90 240,200 Z"/>
+                            <path d="M 270,200 Q 280,110 260,70 Q 290,100 300,200 Z"/>
+                            <path d="M 320,200 Q 330,120 310,80 Q 340,110 350,200 Z"/>
+                            <path d="M 370,200 Q 380,110 360,65 Q 390,100 400,200 Z"/>
+                        </g>
+                        <!-- Scarecrow -->
+                        <path d="M200,100 L200,160 M170,120 L230,120" stroke="#78350f" stroke-width="4"/>
+                        <circle cx="200" cy="95" r="12" fill="#fef08a"/>
+                        <polygon points="190,85 210,85 200,65" fill="#b45309"/>
+                        <!-- Crows -->
+                        <path d="M120,50 Q125,40 130,50 Q135,40 140,50" stroke="#000" stroke-width="2" fill="none"/>
+                        <path d="M280,40 Q285,30 290,40 Q295,30 300,40" stroke="#000" stroke-width="2" fill="none"/>
+                    </svg>`;
+
+                case 'oficina':
+                    return `
+                    <svg viewBox="0 0 400 200" class="w-full h-full object-cover">
+                        <rect width="400" height="200" fill="#18181b"/>
+                        <rect x="20" y="20" width="360" height="160" fill="#27272a" stroke="#3f3f46" stroke-width="2"/>
+                        <!-- Workbench -->
+                        <rect x="50" y="110" width="300" height="50" fill="#52525b"/>
+                        <rect x="60" y="160" width="20" height="30" fill="#3f3f46"/>
+                        <rect x="320" y="160" width="20" height="30" fill="#3f3f46"/>
+                        <!-- Pegboard Tools -->
+                        <rect x="80" y="40" width="240" height="50" fill="#3f3f46" stroke="#52525b"/>
+                        <path d="M100,50 L100,75 M120,50 L125,70 M150,55 L165,55 M190,50 L190,80" stroke="#a1a1aa" stroke-width="3"/>
+                        <!-- Oil Can -->
+                        <path d="M 280,110 L 300,110 L 295,90 L 285,90 Z" fill="#dc2626"/>
+                    </svg>`;
+
+                case 'rio':
+                    return `
+                    <svg viewBox="0 0 400 200" class="w-full h-full object-cover">
+                        <rect width="400" height="200" fill="#14532d"/>
+                        <!-- River -->
+                        <path d="M 0,60 Q 200,120 400,80 L 400,160 Q 200,200 0,140 Z" fill="#0284c7"/>
+                        <!-- Pier -->
+                        <rect x="150" y="110" width="80" height="30" fill="#78350f"/>
+                        <rect x="160" y="130" width="10" height="40" fill="#451a03"/>
+                        <rect x="210" y="130" width="10" height="40" fill="#451a03"/>
+                        <!-- Fisherman Silhouete -->
+                        <circle cx="190" cy="95" r="8" fill="#fef08a"/>
+                        <path d="M185,103 L195,103 L200,120 L180,120 Z" fill="#1e3a8a"/>
+                        <!-- Fishing Rod -->
+                        <line x1="195" y1="105" x2="260" y2="80" stroke="#d97706" stroke-width="2"/>
+                        <line x1="260" y1="80" x2="260" y2="130" stroke="#e0f2fe" stroke-width="1" stroke-dasharray="2,2"/>
+                        <!-- Water lily -->
+                        <circle cx="80" cy="110" r="10" fill="#22c55e"/>
+                    </svg>`;
+
+                case 'floresta':
+                    return `
+                    <svg viewBox="0 0 400 200" class="w-full h-full object-cover">
+                        <rect width="400" height="200" fill="#052e16"/>
+                        <!-- Dark trees -->
+                        <path d="M0,0 L50,150 L0,150 Z M40,0 L90,170 L10,170 Z M300,0 L360,180 L250,180 Z M350,0 L400,150 L310,150 Z" fill="#022c22"/>
+                        <!-- Cave Entrance -->
+                        <path d="M 120,200 C 120,90 280,90 280,200 Z" fill="#09090b"/>
+                        <!-- Tractor Silhouette inside cave if not fixed -->
+                        <g id="svg-tractor-in-cave" opacity="0.8">
+                            <rect x="160" y="130" width="80" height="40" fill="#15803d" rx="5"/>
+                            <circle cx="180" cy="170" r="18" fill="#18181b" stroke="#71717a" stroke-width="3"/>
+                            <circle cx="230" cy="165" r="22" fill="#18181b" stroke="#71717a" stroke-width="4"/>
+                            <rect x="200" y="110" width="35" height="30" fill="#166534"/>
+                        </g>
+                        <!-- Glowing Raccoon Eyes -->
+                        <circle cx="150" cy="130" r="2" fill="#facc15" class="glow-effect"/>
+                        <circle cx="156" cy="130" r="2" fill="#facc15" class="glow-effect"/>
+                        <circle cx="250" cy="125" r="2" fill="#facc15" class="glow-effect"/>
+                        <circle cx="256" cy="125" r="2" fill="#facc15" class="glow-effect"/>
+                    </svg>`;
+
+                case 'vitoria':
+                    return `
+                    <svg viewBox="0 0 400 200" class="w-full h-full object-cover">
+                        <rect width="400" height="200" fill="#15803d"/>
+                        <!-- Sunburst rays -->
+                        <path d="M200,100 L0,0 L400,0 Z M200,100 L400,200 L0,200 Z" fill="#22c55e" opacity="0.3"/>
+                        <!-- Massey Valente Tractor Shiny Green -->
+                        <g transform="translate(100, 40)">
+                            <rect x="20" y="50" width="120" height="50" fill="#16a34a" rx="6" stroke="#bbf7d0" stroke-width="2"/>
+                            <rect x="80" y="20" width="55" height="45" fill="#15803d" stroke="#bbf7d0" stroke-width="2"/>
+                            <rect x="90" y="25" width="40" height="20" fill="#bae6fd"/>
+                            <!-- Chimney Exhaust -->
+                            <rect x="35" y="20" width="8" height="30" fill="#334155"/>
+                            <!-- Big Wheels -->
+                            <circle cx="45" cy="100" r="22" fill="#18181b" stroke="#f59e0b" stroke-width="5"/>
+                            <circle cx="125" cy="95" r="30" fill="#18181b" stroke="#f59e0b" stroke-width="6"/>
+                            <!-- Gold Star Badge -->
+                            <polygon points="100,0 108,18 128,18 112,30 118,50 100,38 82,50 88,30 72,18 92,18" fill="#facc15" stroke="#b45309" stroke-width="2"/>
+                        </g>
+                    </svg>`;
+
+                default:
+                    return getSceneSVG('fazenda');
+            }
+        }
+
+        /* ==========================================================================
+           SCENES GRAPH & STORY ENGINE
+           ========================================================================== */
+        const SCENES = {
+            // --- FAZENDA SEDE ---
+            'start': {
+                title: "Casa Sede - Fazenda Esperança",
+                location: 'fazenda',
+                text: "Você acorda com o grito desesperado do Seu Antônio: <i>'O Massey-Valente SUMIU! Meu trator verde precioso foi levado durante a noite!'</i>. Ele conta que viu rastros estranhos perto do celeiro e promete te dar 50 Moedas e o título de Mestre Fazendeiro se você encontrar o trator.",
+                choices: [
+                    { text: "Prometer ajudar o Seu Antônio", nextScene: 'fazenda_ajudar' },
+                    { text: "Procurar algo útil na cozinha", nextScene: 'fazenda_cozinha' }
+                ]
+            },
+            'fazenda_ajudar': {
+                title: "Casa Sede",
+                location: 'fazenda',
+                text: "Seu Antônio te dá 10 Moedas de incentivo e recomenda: <i>'Vá até o Celeiro primeiro. O Cão Barão estava latindo muito de madrugada!'</i>",
+                onEnter: () => {
+                    if (!gameState.flags.talkedToAntonio) {
+                        gameState.flags.talkedToAntonio = true;
+                        addCoins(10);
+                    }
+                },
+                choices: [
+                    { text: "Investigar a Cozinha", nextScene: 'fazenda_cozinha' },
+                    { text: "Ir direto para o Celeiro", action: () => travelTo('celeiro') }
+                ]
+            },
+            'fazenda_cozinha': {
+                title: "Cozinha da Fazenda",
+                location: 'fazenda',
+                text: "Na mesa da cozinha há um Pão de Queijo quentinho e um Petisco do Cão na prateleira.",
+                choices: [
+                    { 
+                        text: "Pegar Petisco do Cão", 
+                        condition: () => !hasItem('petisco') && !gameState.flags.fedBarao,
+                        action: () => {
+                            addItem(ITEMS.petisco);
+                            updateSceneText("Você guardou o Petisco do Cão na mochila!");
+                        }
+                    },
+                    {
+                        text: "Comer Pão de Queijo (+25 Energia)",
+                        condition: () => gameState.energy < 100,
+                        action: () => {
+                            addEnergy(25);
+                            updateSceneText("Nham! O Pão de Queijo estava delicioso. Energia restaurada!");
+                        }
+                    },
+                    { text: "Ir para o Celeiro", action: () => travelTo('celeiro') }
+                ]
+            },
+
+            // --- CELEIRO ---
+            'celeiro_main': {
+                title: "O Celeiro da Fazenda",
+                location: 'celeiro',
+                text: "O celeiro cheira a palha e óleo de motor velho. O Cão Barão está deitado no portão do fundo, rosnando e bloqueando o caminho para o milharal. No chão de lama, há marcas profundas de pneu.",
+                choices: [
+                    {
+                        text: "Examinar as Marcas de Pneu",
+                        condition: () => !gameState.flags.foundTracksCeleiro,
+                        action: () => {
+                            gameState.flags.foundTracksCeleiro = true;
+                            addClue("Marcas de Pneu em direção ao Milharal!");
+                            updateSceneText("Você examina o lamaçal: o trator foi empurrado ou dirigido na direção do Milharal e do Rio!");
+                        }
+                    },
+                    {
+                        text: "Dar Petisco para o Cão Barão",
+                        condition: () => hasItem('petisco') && !gameState.flags.fedBarao,
+                        action: () => {
+                            removeItem('petisco');
+                            gameState.flags.fedBarao = true;
+                            playSound('item');
+                            addClue("Barão agora é seu companheiro de busca!");
+                            updateSceneText("Barão abana o rabo alegremente, devora o petisco e agora te segue abanando o rabo! O caminho para o Milharal está livre.");
+                        }
+                    },
+                    { text: "Seguir para o Milharal", action: () => travelTo('milharal') },
+                    { text: "Ir para a Oficina do Seu Bento", action: () => travelTo('oficina') }
+                ]
+            },
+
+            // --- MILHARAL ---
+            'milharal_main': {
+                title: "O Milharal Assustador",
+                location: 'milharal',
+                text: "As espigas de milho são altas. Vários corvos de olhar feio estão empoleirados nas estacas. Eles parecem guardingor um objeto brilhante no chão!",
+                choices: [
+                    {
+                        text: "Pedir para o Cão Barão espantar os corvos",
+                        condition: () => gameState.flags.fedBarao && !gameState.flags.scaredCrows,
+                        action: () => {
+                            gameState.flags.scaredCrows = true;
+                            addItem(ITEMS.anzol);
+                            addItem(ITEMS.milho_ouro);
+                            playSound('item');
+                            updateSceneText("Barão solta um AU AU feroz! Os corvos voam assustados. Você encontrou um Anzol Dourado brilhante e colheu uma Espiga de Milho!");
+                        }
+                    },
+                    {
+                        text: "Espantar os corvos sozinho (-15 Energia)",
+                        condition: () => !gameState.flags.scaredCrows,
+                        action: () => {
+                            if (gameState.energy <= 15) {
+                                showModal("Pouca Energia!", "Você está muito cansado para encarar os corvos. Coma algo primeiro.");
+                                return;
+                            }
+                            addEnergy(-15);
+                            gameState.flags.scaredCrows = true;
+                            addItem(ITEMS.anzol);
+                            addItem(ITEMS.milho_ouro);
+                            updateSceneText("Você bate palmas e grita bem alto. Os corvos saem voando! Você recolheu o Anzol Dourado e uma Espiga de Milho.");
+                        }
+                    },
+                    { text: "Seguir caminho para o Rio do Sapo", action: () => travelTo('rio') },
+                    { text: "Voltar para o Celeiro", action: () => travelTo('celeiro') }
+                ]
+            },
+
+            // --- RIO DO SAPO ---
+            'rio_main': {
+                title: "O Rio do Sapo",
+                location: 'rio',
+                text: "O som da água é relaxante. Seu Zico, o pescador da região, está sentado no trapiche resmungando: <i>'Perdi meu anzol da sorte ontem à noite... logo quando vi um vulto grande verde passando no escuro!'</i>",
+                choices: [
+                    {
+                        text: "Devolver o Anzol Dourado ao Seu Zico",
+                        condition: () => hasItem('anzol') && !gameState.flags.helpedFisherman,
+                        action: () => {
+                            removeItem('anzol');
+                            gameState.flags.helpedFisherman = true;
+                            addItem(ITEMS.galao_diesel);
+                            addClue("Seu Zico viu o trator entrando no Capão da Caverna!");
+                            updateSceneText("Seu Zico chora de alegria! 'Meu anzol! Em agradecimento, tome este Galão de Diesel que achei na margem. Vi uns guaxinins guinchando e levando o trator pra Floresta Fechada!'");
+                        }
+                    },
+                    {
+                        text: "Conversar com Seu Zico sobre o trator",
+                        action: () => {
+                            if (gameState.flags.helpedFisherman) {
+                                updateSceneText("Seu Zico diz: 'Procure na Caverna Velha no fundo da Floresta Fechada. O trator tá lá!'");
+                            } else {
+                                updateSceneText("Seu Zico murmura: 'Só falo depois que achar meu Anzol Dourado... perdi lá pras bandas do milharal.'");
+                            }
+                        }
+                    },
+                    { text: "Ir para a Oficina", action: () => travelTo('oficina') },
+                    { text: "Ir para a Caverna Velha (Floresta)", action: () => travelTo('floresta') }
+                ]
+            },
+
+            // --- OFICINA DO SEU BENTO ---
+            'oficina_main': {
+                title: "Oficina do Seu Bento",
+                location: 'oficina',
+                text: "A oficina está cheia de peças sobressalentes e cheiro de graxa. Seu Bento está ajustando uma bancada de ferramentas.",
+                choices: [
+                    {
+                        text: "Pegar Chave Inglesa na bancada",
+                        condition: () => !gameState.flags.gotWrench,
+                        action: () => {
+                            gameState.flags.gotWrench = true;
+                            addItem(ITEMS.chave_inglesa);
+                            updateSceneText("Você pegou a Chave Inglesa! Excelente para apertar parafusos e soltar travas.");
+                        }
+                    },
+                    {
+                        text: "Comprar Vela de Ignição (10 Moedas)",
+                        condition: () => !gameState.flags.gotSparkPlug,
+                        action: () => {
+                            if (gameState.coins >= 10) {
+                                addCoins(-10);
+                                gameState.flags.gotSparkPlug = true;
+                                addItem(ITEMS.vela_ignicao);
+                                updateSceneText("Seu Bento te vendeu uma Vela de Ignição novinha em folha!");
+                            } else {
+                                showModal("Moedas Insuficientes", "A Vela de Ignição custa 10 Moedas. Você precisa juntar mais dinheiro!");
+                            }
+                        }
+                    },
+                    { text: "Voltar ao Celeiro", action: () => travelTo('celeiro') },
+                    { text: "Ir para o Rio do Sapo", action: () => travelTo('rio') }
+                ]
+            },
+
+            // --- FLORESTA FECHADA & CAVERNA VELHA ---
+            'floresta_main': {
+                title: "Entrada da Caverna Velha",
+                location: 'floresta',
+                text: "No fundo da mata fechada, dentro de uma caverna escura, está o precioso trator verde Massey-Valente! Porém, uma gangue de Guaxinins Arteiros está em cima dele mexendo em tudo!",
+                choices: [
+                    {
+                        text: "Oferecer Espiga de Milho aos Guaxinins",
+                        condition: () => hasItem('milho_ouro') && !gameState.flags.raccoonsDealtWith,
+                        action: () => {
+                            removeItem('milho_ouro');
+                            gameState.flags.raccoonsDealtWith = true;
+                            addClue("Guaxinins distraídos! Caminho livre para o trator!");
+                            updateSceneText("Os guaxinins ficam loucos pelo milho doce e saem correndo felizes para comer longe dali. O trator está livre!");
+                        }
+                    },
+                    {
+                        text: "Usar Barão para espantar os Guaxinins",
+                        condition: () => gameState.flags.fedBarao && !gameState.flags.raccoonsDealtWith,
+                        action: () => {
+                            gameState.flags.raccoonsDealtWith = true;
+                            addClue("Barão colocou os guaxinins pra correr!");
+                            updateSceneText("Barão dá um latido retumbante que ecoa na caverna. Os guaxinins saem em disparada!");
+                        }
+                    },
+                    {
+                        text: "Examinar e Consertar o Massey-Valente",
+                        condition: () => gameState.flags.raccoonsDealtWith,
+                        action: () => openTractorRepairMinigame()
+                    },
+                    { text: "Voltar para a Fazenda", action: () => travelTo('fazenda') }
+                ]
+            }
+        };
+
+        /* ==========================================================================
+           CORE GAME ENGINE FUNCTIONS
+           ========================================================================== */
+
+        function initGame() {
+            gameState.energy = 100;
+            gameState.coins = 15;
+            gameState.clues = 0;
+            gameState.inventory = [];
+            gameState.flags = {
+                talkedToAntonio: false,
+                foundTracksCeleiro: false,
+                fedBarao: false,
+                scaredCrows: false,
+                hasFishHook: false,
+                helpedFisherman: false,
+                gotDiesel: false,
+                gotWrench: false,
+                gotSparkPlug: false,
+                raccoonsDealtWith: false,
+                tractorFixed: false
+            };
+
+            updateHUD();
+            renderInventory();
+            renderScene('start');
+        }
+
+        function renderScene(sceneId) {
+            const scene = SCENES[sceneId];
+            if (!scene) return;
+
+            gameState.currentSceneId = sceneId;
+            gameState.currentLocation = scene.location;
+
+            // Trigger onEnter callbacks
+            if (scene.onEnter) scene.onEnter();
+
+            // Update Header & Graphics
+            document.getElementById('scene-title').innerText = scene.title;
+            document.getElementById('scene-svg').innerHTML = getSceneSVG(scene.location);
+            document.getElementById('location-badge').innerText = scene.title;
+
+            // Highlight Active Map Button
+            document.querySelectorAll('[id^="map-"]').forEach(btn => {
+                btn.classList.remove('bg-amber-800', 'border-amber-400');
+            });
+            const activeMapBtn = document.getElementById(`map-${scene.location}`);
+            if (activeMapBtn) {
+                activeMapBtn.classList.add('bg-amber-800', 'border-amber-400');
+            }
+
+            // Update Text
+            updateSceneText(scene.text);
+
+            // Render Choice Buttons
+            renderChoices(scene.choices);
+        }
+
+        function updateSceneText(text) {
+            document.getElementById('story-text').innerHTML = text;
+        }
+
+        function renderChoices(choices) {
+            const container = document.getElementById('choices-container');
+            container.innerHTML = '';
+
+            choices.forEach(choice => {
+                // Check condition if present
+                if (choice.condition && !choice.condition()) {
+                    return; // Skip rendering option if condition false
+                }
+
+                const btn = document.createElement('button');
+                btn.className = "btn-retro p-3 text-amber-950 font-bold text-sm text-left rounded-lg flex items-center justify-between";
+                btn.innerHTML = `<span>${choice.text}</span> <i class="fa-solid fa-chevron-right text-xs"></i>`;
+
+                btn.onclick = () => {
+                    playSound('click');
+                    if (choice.action) {
+                        choice.action();
+                    }
+                    if (choice.nextScene) {
+                        renderScene(choice.nextScene);
+                    } else {
+                        // Refresh choices in current scene to update state
+                        renderChoices(SCENES[gameState.currentSceneId].choices);
+                    }
+                };
+
+                container.appendChild(btn);
+            });
+        }
+
+        function travelTo(locationKey) {
+            playSound('click');
+            switch(locationKey) {
+                case 'fazenda': renderScene('start'); break;
+                case 'celeiro': renderScene('celeiro_main'); break;
+                case 'milharal': renderScene('milharal_main'); break;
+                case 'rio': renderScene('rio_main'); break;
+                case 'oficina': renderScene('oficina_main'); break;
+                case 'floresta': renderScene('floresta_main'); break;
+            }
+        }
+
+        /* ==========================================================================
+           STAT & INVENTORY MANAGEMENT
+           ========================================================================== */
+
+        function addEnergy(amount) {
+            gameState.energy = Math.min(100, Math.max(0, gameState.energy + amount));
+            updateHUD();
+            if (gameState.energy <= 0) {
+                showModal("Esgotado!", "Você desmaiou de cansaço... Seu Antônio te encontrou e te levou de volta para a casa para descansar.", () => {
+                    gameState.energy = 50;
+                    travelTo('fazenda');
+                });
+            }
+        }
+
+        function addCoins(amount) {
+            gameState.coins = Math.max(0, gameState.coins + amount);
+            updateHUD();
+        }
+
+        function addClue(desc) {
+            if (gameState.clues < 4) {
+                gameState.clues += 1;
+                playSound('clue');
+                updateHUD();
+            }
+        }
+
+        function updateHUD() {
+            document.getElementById('stat-energy').innerText = gameState.energy;
+            document.getElementById('stat-coins').innerText = gameState.coins;
+            document.getElementById('stat-clues').innerText = `${gameState.clues}/4`;
+        }
+
+        function addItem(itemObj) {
+            if (gameState.inventory.length >= 6) {
+                showModal("Mochila Cheia!", "Sua mochila não tem mais espaço.");
+                return false;
+            }
+            if (!hasItem(itemObj.id)) {
+                gameState.inventory.push(itemObj);
+                playSound('item');
+                renderInventory();
+                return true;
+            }
+            return false;
+        }
+
+        function removeItem(itemId) {
+            gameState.inventory = gameState.inventory.filter(i => i.id !== itemId);
+            renderInventory();
+        }
+
+        function hasItem(itemId) {
+            return gameState.inventory.some(i => i.id === itemId);
+        }
+
+        function renderInventory() {
+            const grid = document.getElementById('inventory-grid');
+            const countLabel = document.getElementById('inventory-count');
+            grid.innerHTML = '';
+
+            countLabel.innerText = `${gameState.inventory.length}/6 itens`;
+
+            for (let i = 0; i < 6; i++) {
+                const item = gameState.inventory[i];
+                const slot = document.createElement('div');
+                slot.className = "wood-card flex items-center justify-center text-2xl relative cursor-pointer hover:border-amber-400 transition h-14";
+
+                if (item) {
+                    slot.innerHTML = `<span>${item.icon}</span>`;
+                    slot.onclick = () => {
+                        playSound('click');
+                        document.getElementById('item-detail').innerHTML = `<strong>${item.name}:</strong> ${item.desc}`;
+                    };
+                } else {
+                    slot.innerHTML = `<span class="text-stone-700 text-xs pixel-font">Vazio</span>`;
+                }
+
+                grid.appendChild(slot);
+            }
+        }
+
+        /* ==========================================================================
+           TRACTOR REPAIR MINIGAME / FINALE
+           ========================================================================== */
+
+        function openTractorRepairMinigame() {
+            const hasDiesel = hasItem('galao_diesel');
+            const hasWrench = hasItem('chave_inglesa');
+            const hasPlug = hasItem('vela_ignicao');
+
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            const modalActions = document.getElementById('modal-actions');
+
+            modalTitle.innerText = "Painel de Conserto do Massey-Valente";
+
+            let html = `
+                <p class="mb-4 text-amber-200">Para fazer o Massey-Valente funcionar e voltar pra casa, você precisa realizar a manutenção básica:</p>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-2 wood-card">
+                        <span><i class="fa-solid fa-gas-pump text-amber-500 mr-2"></i>1. Abastecer Tanque de Diesel</span>
+                        <span class="${hasDiesel ? 'text-green-400' : 'text-red-400'} font-bold">${hasDiesel ? '✓ Pronto' : '✗ Falta Galão'}</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2 wood-card">
+                        <span><i class="fa-solid fa-plug text-yellow-400 mr-2"></i>2. Trocar Vela de Ignição</span>
+                        <span class="${hasPlug ? 'text-green-400' : 'text-red-400'} font-bold">${hasPlug ? '✓ Pronto' : '✗ Falta Vela'}</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2 wood-card">
+                        <span><i class="fa-solid fa-screwdriver-wrench text-slate-400 mr-2"></i>3. Aperta Correia com Chave</span>
+                        <span class="${hasWrench ? 'text-green-400' : 'text-red-400'} font-bold">${hasWrench ? '✓ Pronto' : '✗ Falta Chave'}</span>
+                    </div>
+                </div>
+            `;
+
+            modalBody.innerHTML = html;
+
+            modalActions.innerHTML = '';
+
+            if (hasDiesel && hasWrench && hasPlug) {
+                const fixBtn = document.createElement('button');
+                fixBtn.className = "px-4 py-2 btn-retro text-amber-950 font-bold rounded flex items-center gap-2 glow-effect";
+                fixBtn.innerHTML = `<i class="fa-solid fa-key"></i> LIGAR O MOTOR!`;
+                fixBtn.onclick = () => {
+                    closeModal();
+                    triggerVictorySequence();
+                };
+                modalActions.appendChild(fixBtn);
+            } else {
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = "px-4 py-2 bg-stone-700 text-stone-300 font-bold rounded";
+                cancelBtn.innerText = "Voltar e Buscar Peças";
+                cancelBtn.onclick = closeModal;
+                modalActions.appendChild(cancelBtn);
+            }
+
+            document.getElementById('game-modal').classList.remove('hidden');
+            document.getElementById('game-modal').classList.add('flex');
+        }
+
+        function triggerVictorySequence() {
+            playSound('engine');
+            setTimeout(() => {
+                playSound('win');
+            }, 1000);
+
+            document.getElementById('scene-title').innerText = "VITÓRIA TRIUNFANTE!";
+            document.getElementById('scene-svg').innerHTML = getSceneSVG('vitoria');
+            document.getElementById('location-badge').innerText = "Missão Cumprida!";
+
+            updateSceneText(`
+                <div class="text-center">
+                    <h3 class="text-xl font-bold text-yellow-400 mb-2">VRUMMM! O Massey-Valente Ganhou Vida!</h3>
+                    <p class="text-stone-200">
+                        O motor do trator rroncou forte, iluminando toda a Caverna Velha! Você dirigiu o Massey-Valente de volta triunfante até a entrada da Fazenda Esperança.
+                    </p>
+                    <p class="mt-2 text-amber-300 font-bold">
+                        Seu Antônio chorou de emoção, te entregou o prêmio e te nomeou o Maior Fazendeiro Mestre da Região!
+                    </p>
+                </div>
+            `);
+
+            const container = document.getElementById('choices-container');
+            container.innerHTML = `
+                <button onclick="initGame()" class="col-span-2 btn-retro p-4 text-amber-950 font-bold text-center text-lg rounded-lg shadow-lg">
+                    <i class="fa-solid fa-trophy text-amber-900 mr-2"></i> Jogar Novamente!
+                </button>
+            `;
+        }
+
+        /* ==========================================================================
+           MODAL UTILITIES
+           ========================================================================== */
+
+        function showModal(title, text, callback) {
+            playSound('error');
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-body').innerText = text;
+            
+            const actions = document.getElementById('modal-actions');
+            actions.innerHTML = `
+                <button id="modal-ok-btn" class="px-4 py-2 btn-retro text-amber-950 font-bold rounded">OK</button>
+            `;
+
+            document.getElementById('modal-ok-btn').onclick = () => {
+                closeModal();
+                if (callback) callback();
+            };
+
+            document.getElementById('game-modal').classList.remove('hidden');
+            document.getElementById('game-modal').classList.add('flex');
+        }
+
+        function closeModal() {
+            playSound('click');
+            document.getElementById('game-modal').classList.add('hidden');
+            document.getElementById('game-modal').classList.remove('flex');
+        }
+
+        function confirmRestart() {
+            if (confirm("Deseja mesmo reiniciar sua jornada do zero?")) {
+                initGame();
+            }
+        }
+
+        // Initialize Game on Load
+        window.onload = () => {
+            initGame();
+        };
+    </script>
+</body>
+</html>
